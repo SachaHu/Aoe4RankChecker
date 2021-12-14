@@ -1,0 +1,16 @@
+﻿<Window x:Class="Aoe4RankChecker.ShowPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Aoe4RankChecker"
+        mc:Ignorable="d"
+        Title="ShowPage" Height="25" Width="650"
+        WindowStyle="None" AllowsTransparency="True" Opacity="0.7">
+    <StackPanel Name="sp" Orientation="Horizontal">
+        
+      
+        
+        
+    </StackPanel>
+</Window>
