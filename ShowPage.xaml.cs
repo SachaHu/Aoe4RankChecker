@@ -48,9 +48,18 @@ namespace Aoe4RankChecker
                 String Uurl = "https://aoeiv.net/api/leaderboard?game=aoe4&leaderboard_id=17&start=1&count=1&search=" + MainWindow.PlayerName;
                 String result = HttpRequestHelper.GetResponseString(HttpRequestHelper.CreateGetHttpResponse(Uurl));
                 Root rt = JsonConvert.DeserializeObject<Root>(result);
-                int userProfile_id = rt.leaderboard[0].profile_id;
-                u1id = userProfile_id.ToString();
-                intu1id = userProfile_id;
+                int userProfile_id;
+                if (rt.leaderboard.Count  > 0)
+                {
+                    userProfile_id = rt.leaderboard[0].profile_id;
+                    u1id = userProfile_id.ToString();
+                    intu1id = userProfile_id;
+                }
+                else
+                {
+                    MessageBox.Show("未在排行榜上找到该Id，请打完定级赛或换用profile_id查找", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                
             }else if (MainWindow .PlayerProId != null)
             {
                 u1id = MainWindow.PlayerProId;
@@ -82,12 +91,20 @@ namespace Aoe4RankChecker
             String url000 = "https://aoeiv.net/api/player/matches?game=aoe4&count=1&profile_id=" + u1id;
             String result00 = HttpRequestHelper.GetResponseString(HttpRequestHelper.CreateGetHttpResponse(url000));
             string[] sArray0 = result00.Split('"');
-            lastMatch = sArray0[3];
+            
+            if (sArray0.Length > 3)
+            {
+                lastMatch = sArray0[3];
+            }
+            else
+            {
+                lastMatch="000000";
+            }
 
 
             //////////////////////////
             ///
-            
+
             //设置计时器
             //设置每次查询间隔，单位毫秒
             dt.Interval = TimeSpan.FromMilliseconds(5000);
@@ -121,7 +138,17 @@ namespace Aoe4RankChecker
             String url0001111 = "https://aoeiv.net/api/player/matches?game=aoe4&count=1&profile_id=" + u1id;
             String result0011 = HttpRequestHelper.GetResponseString(HttpRequestHelper.CreateGetHttpResponse(url0001111));
             string[] sArray01 = result0011.Split('"');
-            currentMatch = sArray01[3];
+
+            if (sArray01 .Length> 3)
+            {
+                currentMatch = sArray01[3];
+            }
+            else
+            {
+                MessageBox.Show("查询比赛记录为空", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            
 
     
             /////////////////////////////////////////////////////////
@@ -159,16 +186,31 @@ namespace Aoe4RankChecker
 
         private string GenerateOverlayString(String id)
         {
+            //引入stat变量
+            //stat对应以下几种情况：
+            //1 一切正常
+            //2 用户未定位
+            //3 对手未定位
+            string stat="1";
+            string player1;
+            string player2;
             //抓取用户最近的一场比赛
             String url = "https://aoeiv.net/api/player/matches?game=aoe4&count=1&profile_id="+ id;
             String result0 = HttpRequestHelper.GetResponseString(HttpRequestHelper.CreateGetHttpResponse(url));
             //这玩意儿不是json，所以手动切割字符串
             string[] sArray = result0.Split('"');
+
+            if (sArray.Length < 66)
+            {
+                return "查询比赛记录为空0";
+            }
+            
             //用双引号切完后删掉开头的冒号
             String player2idm = sArray[64].Remove (0,1);
             //int idmlen = player2idm.Length;
             //判断用户在这局中是p1还是p2
             String player1idm = sArray[38].Remove(0, 1);
+            
             String pos1id=player1idm.Remove(player1idm.Length - 1, 1);
             String pos2id = player2idm.Remove(player2idm.Length - 1, 1);
             String player2id;
@@ -190,8 +232,8 @@ namespace Aoe4RankChecker
             }
             else
             {
-                MessageBox.Show("Id不能为空", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                return "error";
+                
+                return "最近比赛不是1v1，查询失败";
             }
 
             player1civ = TransCiv(player1civ);
@@ -226,23 +268,33 @@ namespace Aoe4RankChecker
             String url22 = "https://aoeiv.net/api/leaderboard?game=aoe4&leaderboard_id=17&start=1&count=1&profile_id=" + player2id;
             String result22 = HttpRequestHelper.GetResponseString(HttpRequestHelper.CreateGetHttpResponse(url22));
             Root rt2 = JsonConvert.DeserializeObject<Root>(result22);
-            String player2rank = rt2.leaderboard[0].rank.ToString();
-            int player2wins = rt2.leaderboard[0].wins;
-            int intplayer2total = rt2.leaderboard[0].games;
-            String player2winrate;
-            if (intplayer2total == 0)
+            if (rt2.leaderboard.Count < 1)
             {
-                player2winrate = "0";
+                player2 = "未定位 "+player2id+" "+player2civ ;
             }
             else
             {
-                player2winrate = (player2wins * 100 / intplayer2total).ToString();
-            }
-            
-            String player2total = intplayer2total.ToString();
-            String player2name = rt2.leaderboard[0].name;
-            String player2rate = rt2.leaderboard[0].rating.ToString(); 
+                String player2rank = rt2.leaderboard[0].rank.ToString();
+                int player2wins = rt2.leaderboard[0].wins;
+                int intplayer2total = rt2.leaderboard[0].games;
+                String player2winrate;
+                if (intplayer2total == 0)
+                {
+                    player2winrate = "0";
+                }
+                else
+                {
+                    player2winrate = (player2wins * 100 / intplayer2total).ToString();
+                }
 
+                String player2total = intplayer2total.ToString();
+                String player2name = rt2.leaderboard[0].name;
+                String player2rate = rt2.leaderboard[0].rating.ToString();
+                player2 = player2winrate + "胜率 " + player2total + "总场数 " + player2rate + " #" + player2rank + " " + player2name + " " + player2civ;
+
+            }
+
+            
 
             //String player1rate = matches.matche.players[0].rating.ToString();
             //String player1name = matches.matche.players[0].name;
@@ -262,16 +314,24 @@ namespace Aoe4RankChecker
             String url11 = "https://aoeiv.net/api/leaderboard?game=aoe4&leaderboard_id=17&start=1&count=1&profile_id=" + id;
             String result11 = HttpRequestHelper.GetResponseString(HttpRequestHelper.CreateGetHttpResponse(url11));
             Root rt1 = JsonConvert.DeserializeObject<Root>(result11);
-            String player1rank = rt1.leaderboard[0].rank.ToString();
-            String player1name = MainWindow.PlayerName;
-            int player1wins = rt1.leaderboard[0].wins;
-            int intplayer1total = rt1.leaderboard[0].games;
-            String player1winrate = (player1wins * 100 / intplayer1total).ToString();
-            String player1total = intplayer1total.ToString();
-            String player1rate = rt1.leaderboard[0].rating.ToString();
-
-
-            String resultString = player1civ + " " + player1name + " #" + player1rank + " " + player1rate + " 总场数" + player1total + " 胜率" + player1winrate + " vs " + player2winrate + "胜率 " + player2total + "总场数 " + player2rate + " #" + player2rank + " " + player2name +  " " + player2civ;
+            if (rt1.leaderboard.Count < 1)
+            {
+                player1=player1civ+" "+id+"未定位";
+            }
+            else
+            {
+                String player1rank = rt1.leaderboard[0].rank.ToString();
+                String player1name = rt1.leaderboard[0].name;
+                int player1wins = rt1.leaderboard[0].wins;
+                int intplayer1total = rt1.leaderboard[0].games;
+                String player1winrate = (player1wins * 100 / intplayer1total).ToString();
+                String player1total = intplayer1total.ToString();
+                String player1rate = rt1.leaderboard[0].rating.ToString();
+                player1 = player1civ + " " + player1name + " #" + player1rank + " " + player1rate + " 总场数" + player1total + " 胜率" + player1winrate;
+            }
+            
+            
+            String resultString = player1+ " vs " + player2;
             //String resultString = player2id;
             return resultString;
 
