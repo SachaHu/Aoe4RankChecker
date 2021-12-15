@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Aoe4RankChecker"
         mc:Ignorable="d"
-        Title="Aoe4RankChecker v1.0" Height="300" Width="324">
+        Title="Aoe4RankChecker v1.1" Height="300" Width="324">
 
     <Grid Margin="0,0,-483,-318">
         <TextBlock Text="请输入你的游戏昵称" Margin="0,3,533,548"></TextBlock >
